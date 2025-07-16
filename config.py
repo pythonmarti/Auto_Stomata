@@ -15,18 +15,17 @@ SEGMENTATION_MODEL_NAME = "Yolov11x-C3CA-best.pt"
 DETECTION_MODEL_PATH = MODELS_DIR / DETECTION_MODEL_NAME
 SEGMENTATION_MODEL_PATH = MODELS_DIR / SEGMENTATION_MODEL_NAME
 
-# --- Rutas de Salida de cada Etapa ---
-# Nota: Ultralytics crea su propia carpeta 'runs/detect/predict', 
-# pero centralizamos nuestras salidas personalizadas aquí.
-CROPPED_OUTPUT_DIR = OUTPUT_DIR / "2_cropped_stomata"
+# --- Ruta de Salida Final ---
+# El reporte CSV es el único archivo de salida que es global para todo el proceso.
 FINAL_REPORT_PATH = OUTPUT_DIR / "final_report.csv"
 
 # --- Parámetros del Pipeline ---
 # Confianza mínima para la detección de estomas en la Etapa 1
-DETECTION_CONFIDENCE = 0.85 
+DETECTION_CONFIDENCE = 0.81 
 # Confianza mínima para la segmentación en la Etapa 3
-SEGMENTATION_CONFIDENCE = 0.25
+SEGMENTATION_CONFIDENCE = 0.25 # Te sugiero mantenerlo bajo para evitar las advertencias
 
-# Asegurarse de que las carpetas de salida existan
+# Asegurarse de que las carpetas base existan
 OUTPUT_DIR.mkdir(exist_ok=True)
-CROPPED_OUTPUT_DIR.mkdir(exist_ok=True)
+INPUT_DIR.mkdir(exist_ok=True)
+MODELS_DIR.mkdir(exist_ok=True)

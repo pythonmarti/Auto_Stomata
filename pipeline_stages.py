@@ -10,118 +10,106 @@ import numpy as np
 # Importar configuración
 import config
 
-def stage_1_detect_stomata(input_dir: Path, model_path: Path, confidence: float):
+def stage_1_detect_stomata(image_path: Path, model_path: Path, confidence: float):
     """
-    Etapa 1: Detecta estomas en las imágenes de entrada usando un modelo YOLO.
+    Etapa 1: Detecta estomas en UNA SOLA imagen de entrada usando un modelo YOLO.
 
     Args:
-        input_dir (Path): Carpeta con las imágenes de entrada.
+        image_path (Path): Ruta a la imagen de entrada individual.
         model_path (Path): Ruta al modelo de detección .pt.
         confidence (float): Umbral de confianza para las detecciones.
 
     Returns:
-        dict: Un diccionario donde las claves son los IDs de imagen y los valores
-              son listas de tuplas (imagen_original, cajas_delimitadoras).
+        dict: Un diccionario con el ID de la imagen y una tupla 
+              (imagen_original, cajas_delimitadoras), o un diccionario vacío si no hay detecciones.
     """
-    print("--- Iniciando Etapa 1: Detección de Estomas ---")
+    print(f"--- Etapa 1: Detección en '{image_path.name}' ---")
     if not model_path.exists():
         raise FileNotFoundError(f"Modelo de detección no encontrado en: {model_path}")
 
     model = YOLO(model_path)
     detection_results = {}
 
-    # Validar en todas las imágenes del directorio de entrada
-    # Usamos `stream=True` para procesar imágenes grandes eficientemente
-    results_generator = model.predict(source=str(input_dir), conf=confidence, stream=True)
+    # Predecir en la imagen individual
+    result = model.predict(source=str(image_path), conf=confidence, verbose=False)[0] # verbose=False para un log más limpio
 
-    for result in results_generator:
-        image_path = Path(result.path)
-        image_id = image_path.stem  # Extraer ID (nombre del archivo sin extensión)
-        
-        # Cargar la imagen original una vez
-        original_image = result.orig_img
-        
-        # Obtener las cajas delimitadoras en formato [x1, y1, x2, y2]
-        boxes = result.boxes.xyxy.cpu().numpy().astype(int)
-        
-        if boxes.size > 0:
-            print(f"  > Imagen '{image_id}': {len(boxes)} estomas detectados.")
-            detection_results[image_id] = (original_image, boxes)
-        else:
-            print(f"  > Imagen '{image_id}': No se detectaron estomas.")
+    image_id = image_path.stem
+    original_image = result.orig_img
+    boxes = result.boxes.xyxy.cpu().numpy().astype(int)
+    
+    if boxes.size > 0:
+        print(f"  > Se detectaron {len(boxes)} estomas.")
+        detection_results[image_id] = (original_image, boxes)
+    else:
+        print(f"  > No se detectaron estomas con confianza >= {confidence}.")
 
-    print("--- Etapa 1 Finalizada ---\n")
     return detection_results
 
 def stage_2_crop_stomata(detection_results: dict, output_dir: Path):
     """
     Etapa 2: Recorta cada estoma detectado y lo guarda como una imagen individual.
-
-    Args:
-        detection_results (dict): Salida de la Etapa 1.
-        output_dir (Path): Carpeta donde se guardarán los recortes.
+    Esta función no necesita cambios, ya funciona para los datos de una imagen a la vez.
     """
-    print("--- Iniciando Etapa 2: Recorte de Estomas ---")
+    print(f"--- Etapa 2: Recortando estomas para '{list(detection_results.keys())[0]}' ---")
     total_crops = 0
     for image_id, (original_image, boxes) in detection_results.items():
         for i, box in enumerate(boxes):
             x1, y1, x2, y2 = box
-            
-            # Recortar el estoma de la imagen original
             stoma_crop = original_image[y1:y2, x1:x2]
             
-            # Crear un nombre de archivo único que conserve el ID original
+            if stoma_crop.size == 0:
+                continue
+
             crop_filename = f"{image_id}_stoma_{i}.png"
             crop_path = output_dir / crop_filename
-            
-            # Guardar el recorte
             cv2.imwrite(str(crop_path), stoma_crop)
             total_crops += 1
     
     print(f"  > Se generaron {total_crops} recortes en '{output_dir}'.")
-    print("--- Etapa 2 Finalizada ---\n")
 
-
-def stage_3_segment_and_classify(cropped_dir: Path, model_path: Path, confidence: float):
+def stage_3_segment_and_classify(cropped_dir: Path, model_path: Path, confidence: float, masks_output_dir: Path):
     """
-    Etapa 3: Aplica un modelo de segmentación a cada recorte para clasificar
-             (abierto/cerrado) y obtener la máscara de segmentación.
-
-    Args:
-        cropped_dir (Path): Carpeta con las imágenes recortadas.
-        model_path (Path): Ruta al modelo de segmentación .pt.
-        confidence (float): Umbral de confianza para la segmentación.
-
-    Returns:
-        list: Una lista de diccionarios, cada uno con información sobre un estoma.
+    Etapa 3: Aplica segmentación, guarda visualización y extrae datos.
+    Esta función no necesita cambios, ya funciona con directorios de entrada/salida específicos.
     """
-    print("--- Iniciando Etapa 3: Segmentación y Clasificación ---")
+    print(f"--- Etapa 3: Segmentación y Clasificación ---")
     if not model_path.exists():
         raise FileNotFoundError(f"Modelo de segmentación no encontrado en: {model_path}")
-    print("DEBUG YOLO MODEL PATH")
-    print(model_path)
+
     model = YOLO(model_path)
     segmentation_results = []
+    
+    # Lista de archivos en el directorio de recortes
+    crop_files = list(cropped_dir.glob("*.[jp][pn]g"))
+    if not crop_files:
+        print("  > No hay recortes para procesar en esta etapa.")
+        return []
 
-    results_generator = model.predict(source=str(cropped_dir), conf=confidence, stream=True)
+    # Usamos verbose=False para evitar el log detallado de cada imagen de recorte
+    results_generator = model.predict(source=str(cropped_dir), conf=confidence, stream=True, verbose=False)
 
     for result in results_generator:
         if result.masks is None or len(result.masks) == 0:
-            print(f"  > Advertencia: No se encontró segmentación para '{Path(result.path).name}'.")
             continue
             
         crop_path = Path(result.path)
-        # Extraer ID original del nombre del recorte. Ej: "imagen_id_001_stoma_0" -> "imagen_id_001"
         original_id = "_".join(crop_path.stem.split("_")[:-2])
-
-        # Asumimos una segmentación por recorte
         mask = result.masks[0]
         class_id = int(result.boxes.cls[0])
         class_name = model.names[class_id]
-        
-        # Obtener el polígono de la máscara como un array de numpy
         mask_polygon = mask.xy[0].astype(np.int32)
         
+        crop_image = cv2.imread(str(crop_path))
+        color = (0, 255, 0) if "open" in class_name else (0, 0, 255)
+        cv2.drawContours(crop_image, [mask_polygon], -1, color, 2)
+        
+        confidence_score = float(result.boxes.conf[0])
+        label = f"{class_name} ({confidence_score:.2f})"
+        cv2.putText(crop_image, label, (5, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        
+        output_mask_path = masks_output_dir / crop_path.name
+        cv2.imwrite(str(output_mask_path), crop_image)
+
         segmentation_results.append({
             "original_id": original_id,
             "crop_path": crop_path,
@@ -129,25 +117,24 @@ def stage_3_segment_and_classify(cropped_dir: Path, model_path: Path, confidence
             "mask_polygon": mask_polygon
         })
 
-    print(f"  > Se procesaron {len(segmentation_results)} recortes.")
-    print("--- Etapa 3 Finalizada ---\n")
+    print(f"  > Se procesaron y segmentaron {len(segmentation_results)} recortes.")
+    print(f"  > Visualizaciones de máscaras guardadas en '{masks_output_dir}'.")
     return segmentation_results
 
 def stage_4_extract_and_aggregate_parameters(segmentation_results: list, output_csv_path: Path):
     """
-    Etapa 4: Calcula parámetros morfológicos (área) y los agrega por imagen original.
-
-    Args:
-        segmentation_results (list): Salida de la Etapa 3.
-        output_csv_path (Path): Ruta para guardar el informe final en CSV.
+    Etapa 4: Calcula parámetros morfológicos y los agrega por imagen original.
+    Esta función no necesita cambios, ya está diseñada para agregar datos de múltiples imágenes.
     """
-    print("--- Iniciando Etapa 4: Extracción y Agregación de Parámetros ---")
+    print("--- Etapa 4: Extracción y Agregación de Parámetros Globales ---")
     
-    # Calcular área para cada estoma
+    if not segmentation_results:
+        print("  > No hay datos de segmentación para generar el informe.")
+        return
+
     for res in segmentation_results:
         res["area"] = cv2.contourArea(res["mask_polygon"])
 
-    # Agrupar resultados por el ID de la imagen original
     aggregated_data = defaultdict(lambda: {
         "open_stomata_count": 0,
         "closed_stomata_count": 0,
@@ -159,15 +146,13 @@ def stage_4_extract_and_aggregate_parameters(segmentation_results: list, output_
         image_id = res["original_id"]
         aggregated_data[image_id]["total_area"] += res["area"]
         aggregated_data[image_id]["stomata_details"].append(res)
-        
         if "open" in res["class"]:
             aggregated_data[image_id]["open_stomata_count"] += 1
         elif "closed" in res["class"]:
             aggregated_data[image_id]["closed_stomata_count"] += 1
 
-    # Preparar los datos para el DataFrame de Pandas
     final_report_data = []
-    for image_id, data in aggregated_data.items():
+    for image_id, data in sorted(aggregated_data.items()): # sorted() para un orden consistente
         total_stomata = len(data["stomata_details"])
         average_area = (data["total_area"] / total_stomata) if total_stomata > 0 else 0
         
@@ -179,15 +164,10 @@ def stage_4_extract_and_aggregate_parameters(segmentation_results: list, output_
             "total_area_pixels": round(data["total_area"], 2),
             "average_area_pixels": round(average_area, 2)
         })
-
-    # Crear y guardar el DataFrame
-    if not final_report_data:
-        print("  > No se generaron datos para el informe final.")
-        return
         
     df = pd.DataFrame(final_report_data)
     df.to_csv(output_csv_path, index=False)
     
-    print(f"  > Informe final guardado en '{output_csv_path}'.")
-    print(df.to_string()) # Imprimir tabla en consola
-    print("\n--- Etapa 4 Finalizada ---")
+    print(f"  > Informe final con {len(df)} filas guardado en '{output_csv_path}'.")
+    print("--- Resumen del Informe ---")
+    print(df.to_string())
