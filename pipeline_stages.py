@@ -98,7 +98,8 @@ def stage_3_segment_and_classify(cropped_dir: Path, model_path: Path, confidence
     print("--- Iniciando Etapa 3: Segmentación y Clasificación ---")
     if not model_path.exists():
         raise FileNotFoundError(f"Modelo de segmentación no encontrado en: {model_path}")
-
+    print("DEBUG YOLO MODEL PATH")
+    print(model_path)
     model = YOLO(model_path)
     segmentation_results = []
 
