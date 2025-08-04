@@ -18,6 +18,8 @@ SEGMENTATION_MODEL_PATH = MODELS_DIR / SEGMENTATION_MODEL_NAME
 # --- Ruta de Salida Final ---
 # El reporte CSV es el único archivo de salida que es global para todo el proceso.
 FINAL_REPORT_PATH = OUTPUT_DIR / "final_report.csv"
+#Guardar segmentaciones o no 
+SAVE_MASK_VISUALIZATIONS = True
 
 # --- Parámetros del Pipeline ---
 # Confianza mínima para la detección de estomas en la Etapa 1
