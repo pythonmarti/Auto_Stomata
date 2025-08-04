@@ -16,18 +16,15 @@ DETECTION_MODEL_PATH = MODELS_DIR / DETECTION_MODEL_NAME
 SEGMENTATION_MODEL_PATH = MODELS_DIR / SEGMENTATION_MODEL_NAME
 
 # --- Ruta de Salida Final ---
-# El reporte CSV es el único archivo de salida que es global para todo el proceso.
 FINAL_REPORT_PATH = OUTPUT_DIR / "final_report.csv"
-#Guardar segmentaciones o no 
-SAVE_MASK_VISUALIZATIONS = True
+SAVE_MASK_VISUALIZATIONS = False
 
 # --- Parámetros del Pipeline ---
 # Confianza mínima para la detección de estomas en la Etapa 1
 DETECTION_CONFIDENCE = 0.81 
 # Confianza mínima para la segmentación en la Etapa 3
-SEGMENTATION_CONFIDENCE = 0.25 # Te sugiero mantenerlo bajo para evitar las advertencias
+SEGMENTATION_CONFIDENCE = 0.25 
 
-# Asegurarse de que las carpetas base existan
 OUTPUT_DIR.mkdir(exist_ok=True)
 INPUT_DIR.mkdir(exist_ok=True)
 MODELS_DIR.mkdir(exist_ok=True)

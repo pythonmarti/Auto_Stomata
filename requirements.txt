@@ -5,4 +5,3 @@ pandas
 numpy
 torch 
 # Si tienes una GPU NVIDIA compatible con CUDA, instala la versión de torch para GPU
-# visita https://pytorch.org/get-started/locally/ para instrucciones específicas.

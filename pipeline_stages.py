@@ -8,8 +8,6 @@ from collections import defaultdict
 import numpy as np
 from scipy.spatial import distance
 
-# Importar configuración
-# import config # Descomentar si tienes un archivo config.py
 
 def stage_1_detect_stomata(image_path: Path, model_path: Path, confidence: float):
     """
@@ -67,7 +65,7 @@ def stage_2_crop_stomata(detection_results: dict, output_dir: Path):
     
     print(f"  > Se generaron {total_crops} recortes en '{output_dir}'.")
 
-# ### MODIFICADO: stage_3_segment_and_classify ###
+
 def stage_3_segment_and_classify(cropped_dir: Path, model_path: Path, confidence: float, masks_output_dir: Path, save_visualizations: bool):
     """
     Etapa 3: Aplica segmentación, calcula parámetros morfológicos individuales y, opcionalmente, guarda visualizaciones.
@@ -99,7 +97,7 @@ def stage_3_segment_and_classify(cropped_dir: Path, model_path: Path, confidence
         class_name = model.names[class_id]
         mask_polygon = mask.xy[0].astype(np.int32)
         
-        # --- Cálculo de parámetros (esto siempre se ejecuta) ---
+        
         area = cv2.contourArea(mask_polygon)
         if len(mask_polygon) >= 5:
             (x, y), (w, h), angle = cv2.minAreaRect(mask_polygon)
@@ -109,7 +107,6 @@ def stage_3_segment_and_classify(cropped_dir: Path, model_path: Path, confidence
         else:
             length, width, shape_index = 0, 0, 0
 
-        # ### BLOQUE DE VISUALIZACIÓN CONDICIONAL ###
         if save_visualizations:
             # Este bloque solo se ejecuta si el parámetro es True
             crop_image = cv2.imread(str(crop_path))
@@ -125,9 +122,7 @@ def stage_3_segment_and_classify(cropped_dir: Path, model_path: Path, confidence
             cv2.putText(image_with_mask, label, (2, 8), cv2.FONT_HERSHEY_SIMPLEX, 0.3, color, 1, cv2.LINE_AA)
             output_mask_path = masks_output_dir / crop_path.name
             cv2.imwrite(str(output_mask_path), image_with_mask)
-        # ### FIN DEL BLOQUE CONDICIONAL ###
 
-        # La extracción de datos siempre ocurre, sin importar la visualización
         segmentation_results.append({
             "original_id": original_id,
             "crop_path": crop_path,
@@ -140,7 +135,6 @@ def stage_3_segment_and_classify(cropped_dir: Path, model_path: Path, confidence
 
     print(f"  > Se procesaron y segmentaron {len(segmentation_results)} recortes.")
     
-    # Mensaje de estado informativo
     if save_visualizations:
         print(f"  > Visualizaciones de máscaras guardadas en '{masks_output_dir}'.")
     else:
@@ -161,26 +155,19 @@ def _calculate_distribution_pattern(boxes):
         float: El valor del Coeficiente de Variación. Retorna np.nan si no es calculable.
     """
     if len(boxes) < 2:
-        return np.nan # No se puede calcular con menos de 2 puntos
+        return np.nan 
 
-    # Calcular centroides de las cajas
+    
     centroids = np.array([((box[0] + box[2]) / 2, (box[1] + box[3]) / 2) for box in boxes])
-    
-    # Calcular la matriz de distancias entre todos los puntos
     dist_matrix = distance.cdist(centroids, centroids, 'euclidean')
-    
-    # Rellenar la diagonal con infinito para ignorar la distancia de un punto a sí mismo
     np.fill_diagonal(dist_matrix, np.inf)
     
-    # Encontrar la distancia al vecino más cercano para cada punto
     nearest_neighbor_distances = np.min(dist_matrix, axis=1)
     
-    # Calcular media y desviación estándar de estas distancias
     mean_dist = np.mean(nearest_neighbor_distances)
     std_dev_dist = np.std(nearest_neighbor_distances)
     
-    # Calcular el Coeficiente de Variación (CV)
-    # Evitar división por cero si todos los puntos están en el mismo lugar
+
     cv = std_dev_dist / mean_dist if mean_dist > 0 else 0.0
     
     return cv
@@ -198,7 +185,6 @@ def stage_4_extract_and_aggregate_parameters(segmentation_results: list, detecti
         print("  > No hay datos de segmentación para generar el informe.")
         return
 
-    # Estructura para agregar todos los datos numéricos por imagen
     aggregated_data = defaultdict(lambda: {
         "open_stomata_count": 0,
         "closed_stomata_count": 0,
@@ -225,22 +211,16 @@ def stage_4_extract_and_aggregate_parameters(segmentation_results: list, detecti
             data["closed_stomata_count"] += 1
 
     final_report_data = []
-    # Usar sorted() para un orden consistente en el informe
     for image_id, data in sorted(aggregated_data.items()):
         count = data["stomata_count"]
-        
-        # Calcular promedios de los parámetros morfológicos
         avg_area = data["total_area"] / count if count > 0 else 0
         avg_length = data["total_length"] / count if count > 0 else 0
         avg_width = data["total_width"] / count if count > 0 else 0
         avg_shape_index = data["total_shape_index"] / count if count > 0 else 0
         
-        # Calcular patrón de distribución usando las cajas de la Etapa 1
-        # Nota: detection_results contiene (original_image, boxes)
         boxes_for_image = detection_results.get(image_id, (None, []))[1]
         distribution_cv = _calculate_distribution_pattern(boxes_for_image)
 
-        # Crear el diccionario para el informe final con los nombres de columna solicitados
         final_report_data.append({
             "image_id": image_id,
             # NOTA: Esto es un conteo por imagen. La densidad real (estomas/mm^2) requeriría una escala.
