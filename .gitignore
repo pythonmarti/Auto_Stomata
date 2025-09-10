@@ -1,5 +1,4 @@
-models/Yolov11x-C3CA-best.pt 
-models/Yolo11x-exp2-best2.pt
 
+.DS_Store
 /validar
 /venv_pipeline
