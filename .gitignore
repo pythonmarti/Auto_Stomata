@@ -1,4 +1,11 @@
-
 .DS_Store
 /validar
 /venv_pipeline
+/input_images2
+/output2
+
+/subval
+val-pipeline.xlsx
+validacion.csv
+validacion.ipynb
+validacion.xlsx
