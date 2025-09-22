@@ -3,9 +3,6 @@
 /venv_pipeline
 /input_images2
 /output2
+validacion.ipynb
 
 /subval
-val-pipeline.xlsx
-validacion.csv
-validacion.ipynb
-validacion.xlsx
