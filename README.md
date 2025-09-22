@@ -61,11 +61,16 @@ Tradicionalmente, la medición de parámetros estomáticos se ha realizado de fo
     ```bash
     pip install -r requirements.txt
     ```
-4.  **Ejecutar la aplicación:**
+4.  **Dirigirse a carpeta input_images**
+    Se dirige a carpeta "input_images" para subir las imagenes microscopicas de estomas
+5.  **Ejecutar la aplicación:**
     ```bash
     python main.py
     ```
-    Abre la URL proporcionada en tu navegador.
+6.  **Resultados**
+    Para visualizar las máscaras de segmentación realizadas por el modelo, junto al excel con la estimación de parametros morfológicos, revisar la carpeta "output"
+
+**Modelos fueron entrenados para** *Arabidopsis thaliana* **, bajo ciertas condiciones particulares, no se garantiza funcionamiento optimo en imágenes con condiciones significativamente distintas a las del entrenamiento**
 
 ## 📄 Licencia
 
