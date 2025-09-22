@@ -1,7 +1,8 @@
 # requirements.txt
-ultralytics
+
+ultralytics @ git+https://github.com/pythonmarti/ultralytics-cordatt.git
+
 opencv-python
 pandas
 numpy
-torch 
-# Si tienes una GPU NVIDIA compatible con CUDA, instala la versión de torch para GPU
+torch

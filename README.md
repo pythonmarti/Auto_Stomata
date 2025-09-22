@@ -1,6 +1,6 @@
 # Auto-Stomata: Pipeline Automatizado para Análisis Morfológico de Estomas
 
-Este repositorio contiene un pipeline de visión por computadora en Python, diseñado para la detección, segmentación y extracción automatizada de parámetros morfológicos de estomas a partir de imágenes de microscopía. La herramienta utiliza modelos de deep learning (YOLO) para procesar imágenes, y genera un reporte detallado con métricas clave y visualizaciones.
+Este repositorio contiene un pipeline de visión por computadora en Python, diseñado para la detección, segmentación y extracción automatizada de parámetros morfológicos de estomas a partir de imágenes de microscopía. La herramienta utiliza modelos de deep learning (YOLO) para procesar imágenes, y genera un reporte detallado con métricas clave.
 
 ### Visualización de Resultados del Modelo
 
@@ -10,7 +10,7 @@ Este repositorio contiene un pipeline de visión por computadora en Python, dise
 
 ## 1. ¿Qué son los estomas y por qué son importantes?
 
-Los **estomas** son poros microscópicos ubicados principalmente en la epidermis de las hojas de las plantas. Cada estoma está rodeado por un par de células especializadas llamadas **células oclusivas** (o células de guarda), que controlan su apertura y cierre.
+Los **estomas** son estructuras microscopicas ubicados principalmente en la epidermis de las hojas de las plantas. Cada estoma está rodeado por un par de células especializadas llamadas **células oclusivas** (o células de guarda), que controlan su apertura y cierre.
 
 Su importancia es fundamental para la supervivencia y fisiología de la planta, ya que actúan como la principal interfaz entre la planta y la atmósfera, regulando procesos vitales:
 
@@ -52,11 +52,16 @@ Tradicionalmente, la medición de parámetros estomáticos se ha realizado de fo
     git clone https://github.com/pythonmarti/Auto-Stomata.git
     cd Auto-Stomata
     ```
-2.  **Instalar dependencias:**
+2.  **Instalar Git LFS**
+    ```bash
+    git lfs install
+    git lfs pull
+    ```
+3.  **Instalar dependencias:**
     ```bash
     pip install -r requirements.txt
     ```
-3.  **Ejecutar la aplicación:**
+4.  **Ejecutar la aplicación:**
     ```bash
     python main.py
     ```

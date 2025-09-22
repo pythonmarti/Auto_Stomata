@@ -17,7 +17,7 @@ SEGMENTATION_MODEL_PATH = MODELS_DIR / SEGMENTATION_MODEL_NAME
 
 # --- Ruta de Salida Final ---
 FINAL_REPORT_PATH = OUTPUT_DIR / "final_report.csv"
-SAVE_MASK_VISUALIZATIONS = False
+SAVE_MASK_VISUALIZATIONS = True
 
 # --- Parámetros del Pipeline ---
 # Confianza mínima para la detección de estomas en la Etapa 1
