@@ -49,28 +49,68 @@ Tradicionalmente, la medición de parámetros estomáticos se ha realizado de fo
 
 1.  **Clonar el repositorio:**
     ```bash
-    git clone https://github.com/pythonmarti/Auto-Stomata.git
-    cd Auto-Stomata
+    git clone https://github.com/pythonmarti/Auto_Stomata.git
+    cd Auto_Stomata
     ```
 2.  **Instalar Git LFS**
     ```bash
     git lfs install
     git lfs pull
     ```
-3.  **Instalar dependencias:**
+3.  **Crear entorno virtual**
+
+    Para correr el repositorio se recomienda crear un entorno virtual que aisle las librerias a utilizar.
+
+    ```bash
+    python -m venv venv
+    ```
+4.  **Activar entorno virtual**
+
+    Activar venv Windows
+
+    ```bash
+    call venv/scripts/activate
+    ```
+
+    Activar venv Mac/Linux
+
+    ```bash
+    source venv/bin/activate
+    ```
+
+5.  **Ejecutar modelo CPU/GPU**
+
+    Para correr solo con CPU es necesario instalar el modulo estandar de pytorch, correr el comando (Con entorno virtual activado).
+
     ```bash
     pip install -r requirements.txt
     ```
-4.  **Dirigirse a carpeta input_images**
-    Se dirige a carpeta "input_images" para subir las imagenes microscopicas de estomas
-5.  **Ejecutar la aplicación:**
+
+    Para correr con GPU (CUDA) se necesita primero instalar pytorch con soporte para cuda, para ello dirigirse a ⁠ https://pytorch.org/get-started/locally/ ⁠ en la página seleccionar la versión de CUDA que le corresponde y su sistema operativo y ejecutar el comando entregado.
+
+    Nota: Si el comando con ⁠ pip3 ⁠ no le funciona, probar con ⁠ pip ⁠ solamente.
+
+    Luego de instalar pytorch con cuda, proceder a instalar dependencias del *requirements_cuda.txt*.
+
+    ```bash
+    pip install -r requirements_cuda.txt
+    ```
+
+6.  **Dirigirse a carpeta input_images**
+
+    Se dirige a carpeta "input_images" para subir las imagenes microscópicas de estomas
+
+7.  **Ejecutar la aplicación:**
     ```bash
     python main.py
     ```
-6.  **Resultados**
+8.  **Resultados**
+
     Para visualizar las máscaras de segmentación realizadas por el modelo, junto al excel con la estimación de parametros morfológicos, revisar la carpeta "output"
 
-**Modelos fueron entrenados para** *Arabidopsis thaliana* **, bajo ciertas condiciones particulares, no se garantiza funcionamiento optimo en imágenes con condiciones significativamente distintas a las del entrenamiento**
+---
+
+*Modelos fueron entrenados para Arabidopsis thaliana, bajo ciertas condiciones particulares. No se garantiza funcionamiento optimo en imágenes con condiciones significativamente distintas a las del entrenamiento.*
 
 ## 📄 Licencia
 

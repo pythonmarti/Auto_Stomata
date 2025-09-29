@@ -1,0 +1,5 @@
+ultralytics @ git+https://github.com/pythonmarti/ultralytics-cordatt.git
+
+opencv-python
+pandas
+numpy
