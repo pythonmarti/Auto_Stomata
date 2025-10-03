@@ -93,7 +93,7 @@ def stage_3_segment_and_classify(cropped_dir: Path, model_path: Path, confidence
         #{"device": "cuda"}
 
     elif config.IS_MPS_AVAILABLE:
-        print("[INFO] CUDA DETECTED, adding to extra params")
+        print("[INFO] MPS DETECTED, adding to extra params")
         results_generator_extra_params["device"] = "mps"
 
     results_generator = model.predict(
