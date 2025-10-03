@@ -7,6 +7,7 @@ from pathlib import Path
 from collections import defaultdict
 import numpy as np
 from scipy.spatial import distance
+import config
 
 
 def stage_1_detect_stomata(image_path: Path, model_path: Path, confidence: float):
@@ -83,9 +84,25 @@ def stage_3_segment_and_classify(cropped_dir: Path, model_path: Path, confidence
     if not crop_files:
         print("  > No hay recortes para procesar en esta etapa.")
         return []
+    
+    results_generator_extra_params = {}
 
-    results_generator = model.predict(source=str(cropped_dir), conf=confidence, stream=True, verbose=False)
+    if config.IS_CUDA_AVAILABLE :
+        print("[INFO] CUDA DETECTED, adding to extra params")
+        results_generator_extra_params["device"] = "cuda"
+        #{"device": "cuda"}
 
+    elif config.IS_MPS_AVAILABLE:
+        print("[INFO] CUDA DETECTED, adding to extra params")
+        results_generator_extra_params["device"] = "mps"
+
+    results_generator = model.predict(
+        source=str(cropped_dir),
+        conf=confidence,
+        stream=True,
+        verbose=False,
+        **results_generator_extra_params
+    )
     for result in results_generator:
         if result.masks is None or len(result.masks) == 0:
             continue
