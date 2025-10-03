@@ -1,5 +1,18 @@
 # config.py
 from pathlib import Path
+import torch 
+
+try:
+    IS_CUDA_AVAILABLE= torch.cuda.is_available()
+except:
+    IS_CUDA_AVAILABLE= False
+
+try:
+    IS_MPS_AVAILABLE=torch.backends.mps.is_available()
+except:
+    IS_MPS_AVAILABLE= False
+
+
 
 # --- Rutas Base ---
 BASE_DIR = Path(__file__).parent
