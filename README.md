@@ -1,3 +1,6 @@
+
+---
+
 # Auto-Stomata: Pipeline Automatizado para Análisis Morfológico de Estomas
 
 Este repositorio contiene un pipeline de visión por computadora en Python, diseñado para la detección, segmentación y extracción automatizada de parámetros morfológicos de estomas a partir de imágenes de microscopía. La herramienta utiliza modelos de deep learning (YOLO) para procesar imágenes, y genera un reporte detallado con métricas clave.
@@ -42,78 +45,201 @@ Tradicionalmente, la medición de parámetros estomáticos se ha realizado de fo
 
 **Auto-Stomata** aborda directamente estos desafíos al automatizar todo el flujo de trabajo. Al utilizar modelos de deep learning, este pipeline ofrece una solución **rápida, objetiva, reproducible y escalable**, permitiendo a los investigadores centrarse en la interpretación de los datos en lugar de en la tediosa tarea de la medición manual.
 
+
+## 🚀 Cómo Usar en Google Colab (Recomendado)
+
+Google Colab ofrece un entorno con GPU gratuita, lo que facilita enormemente la ejecución de este pipeline sin necesidad de configurar drivers o CUDA en tu computadora. Sigue estos pasos para ejecutar el proyecto en un notebook de Colab.
+
+1.  **Abrir un Nuevo Notebook y Configurar la GPU**
+    -   Ve a [Google Colab](https://colab.research.google.com/) y crea un nuevo notebook.
+    -   En el menú, ve a `Entorno de ejecución` -> `Cambiar tipo de entorno de ejecución`.
+    -   En "Acelerador por hardware", selecciona **GPU** y guarda.
+
+2.  **Clonar el Repositorio y Descargar Modelos**
+    Copia y pega el siguiente bloque de código en una celda del notebook y ejecútalo.
+    ```python
+    # Clonar el repositorio
+    !git clone https://github.com/pythonmarti/Auto_Stomata.git
+    %cd Auto_Stomata
+
+    # Instalar Git LFS y descargar los modelos
+    !git lfs install
+    !git lfs pull
+    ```
+
+3.  **Instalar las Dependencias**
+    Colab ya viene con una versión de PyTorch compatible con su GPU, por lo que solo necesitas instalar las dependencias del archivo `requirements_cuda.txt`.
+    ```python
+    # Instalar librerías necesarias
+    !pip install -r requirements_cuda.txt
+
+    # (Opcional) Verificar que la GPU está siendo detectada por PyTorch
+    import torch
+    print("GPU disponible:", torch.cuda.is_available())
+    ```
+    Si la salida es `True`, ¡estás listo para continuar!
+
+4.  **Subir las Imágenes a Analizar**
+    Tienes dos opciones para cargar tus imágenes:
+
+    -   **Opción A (Manual):** En el panel izquierdo de Colab, ve a la pestaña `Archivos`. Navega dentro de la carpeta `Auto_Stomata/input_images`. Haz clic derecho en la carpeta `input_images` y selecciona `Subir`. Elige las imágenes desde tu computadora. *Nota: Estos archivos se borrarán cuando la sesión de Colab termine.*
+
+    -   **Opción B (Conectando Google Drive - Recomendado):** Sube tus imágenes a una carpeta en tu Google Drive. Luego, monta tu Drive en Colab con el siguiente código y copia las imágenes al proyecto.
+    ```python
+    from google.colab import drive
+    drive.mount('/content/drive')
+
+    # Reemplaza 'ruta/a/tus/imagenes' con la ruta real en tu Google Drive
+    !cp /content/drive/MyDrive/ruta/a/tus/imagenes/* ./input_images/
+    ```
+
+5.  **Ejecutar el Pipeline**
+    Ahora, ejecuta el script principal para procesar las imágenes.
+    ```python
+    !python main.py
+    ```
+
+6.  **Descargar los Resultados**
+    Los resultados se guardarán en la carpeta `output`.
+
+    -   **Para descargar a tu computadora:** En el panel de `Archivos`, navega a la carpeta `Auto_Stomata/output`. Haz clic derecho en los archivos que deseas descargar. Si son muchos, puedes comprimirlos primero:
+    ```python
+    # Comprimir la carpeta de resultados en un archivo .zip
+    !zip -r output.zip output
+    ```
+    Luego, descarga el archivo `output.zip` desde el panel de `Archivos`.
+
+    -   **Para guardar en Google Drive:**
+    ```python
+    # Reemplaza 'ruta/para/guardar/resultados' con la carpeta de destino en tu Drive
+    !cp -r ./output/* /content/drive/MyDrive/ruta/para/guardar/resultados/
+    ```
+
 ---
 
-## 🏗️ Cómo Usar el Pipeline
 
+## 🏗️ Cómo Usar el Pipeline (local)
 
-1.  **Clonar el repositorio:**
-    ```bash
-    git clone https://github.com/pythonmarti/Auto_Stomata.git
-    cd Auto_Stomata
-    ```
-2.  **Instalar Git LFS**
-    ```bash
-    git lfs install
-    git lfs pull
-    ```
-3.  **Crear entorno virtual**
+Sigue estos pasos para configurar y ejecutar el proyecto en tu máquina local.
 
-    Para correr el repositorio se recomienda crear un entorno virtual que aisle las librerias a utilizar.
+#### 1. Clonar el repositorio
+```bash
+git clone https://github.com/pythonmarti/Auto_Stomata.git
+cd Auto_Stomata
+```
 
-    ```bash
-    python -m venv venv
-    ```
-4.  **Activar entorno virtual**
+#### 2. Instalar Git LFS y descargar los modelos
+Este proyecto utiliza Git LFS (Large File Storage) para manejar los archivos de los modelos.
+```bash
+git lfs install
+git lfs pull
+```
 
-    Activar venv Windows
+#### 3. Crear y activar un entorno virtual
+Se recomienda encarecidamente crear un entorno virtual para aislar las dependencias del proyecto.
 
-    ```bash
-    call venv/scripts/activate
-    ```
+```bash
+# Crear el entorno
+python -m venv venv
 
-    Activar venv Mac/Linux
+# Activar en Windows
+call venv/scripts/activate
 
-    ```bash
-    source venv/bin/activate
-    ```
+# Activar en Mac/Linux
+source venv/bin/activate
+```
 
-5.  **Ejecutar modelo CPU/GPU**
+#### 4. Instalar dependencias (CPU o GPU)
+Elige una de las dos opciones siguientes según tu hardware. La opción GPU es altamente recomendada para un procesamiento mucho más rápido.
 
-    Para correr solo con CPU es necesario instalar el modulo estandar de pytorch, correr el comando (Con entorno virtual activado).
+<br>
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+##### Opción A: Configuración para CPU
+Si no tienes una GPU NVIDIA o no deseas instalar CUDA, ejecuta el siguiente comando:
+```bash
+pip install -r requirements.txt
+```
+<br>
 
-    Para correr con GPU (CUDA) se necesita primero instalar pytorch con soporte para cuda, para ello dirigirse a ⁠ https://pytorch.org/get-started/locally/ ⁠ en la página seleccionar la versión de CUDA que le corresponde y su sistema operativo y ejecutar el comando entregado.
+##### Opción B: Configuración para GPU (Recomendado, con NVIDIA CUDA)
+Para utilizar la aceleración por GPU, necesitas tener una tarjeta gráfica NVIDIA compatible, los drivers actualizados, CUDA y la versión correcta de PyTorch.
 
-    Nota: Si el comando con ⁠ pip3 ⁠ no le funciona, probar con ⁠ pip ⁠ solamente.
-
-    Luego de instalar pytorch con cuda, proceder a instalar dependencias del *requirements_cuda.txt*.
-
-    ```bash
-    pip install -r requirements_cuda.txt
-    ```
-
-6.  **Dirigirse a carpeta input_images**
-
-    Se dirige a carpeta "input_images" para subir las imagenes microscópicas de estomas
-
-7.  **Ejecutar la aplicación:**
-    ```bash
-    python main.py
-    ```
-8.  **Resultados**
-
-    Para visualizar las máscaras de segmentación realizadas por el modelo, junto al excel con la estimación de parametros morfológicos, revisar la carpeta "output"
+<details>
+<summary><b>🚀 Haz clic aquí para ver la guía detallada de instalación de CUDA y PyTorch para GPU (Windows)</b></summary>
 
 ---
 
-*Modelos fueron entrenados para Arabidopsis thaliana, bajo ciertas condiciones particulares. No se garantiza funcionamiento optimo en imágenes con condiciones significativamente distintas a las del entrenamiento.*
+##### **Paso 1: Verificar si ya tienes CUDA instalado**
+1.  Abre la terminal (cmd o PowerShell).
+2.  Escribe el comando:
+    ```bash
+    nvcc --version
+    ```
+    -   ✅ Si te muestra algo como `Cuda compilation tools, release 12.1`, ya tienes CUDA y puedes saltar al **Paso 4**.
+    -   ❌ Si dice `"nvcc" no se reconoce...`, continúa con el siguiente paso.
+
+##### **Paso 2: Determinar qué versión de CUDA puedes instalar**
+1.  En la misma terminal, ejecuta:
+    ```bash
+    nvidia-smi
+    ```
+2.  En la esquina superior derecha, verás `CUDA Version: 12.2` (o un número similar). Esta es la **versión máxima** que tu driver soporta. Puedes instalar esa misma versión o una anterior (ej. 12.1, 11.8) que sea compatible con PyTorch.
+
+##### **Paso 3: Instalar el NVIDIA CUDA Toolkit (si no lo tenías)**
+1.  Ve al sitio oficial de descargas de CUDA: [https://developer.nvidia.com/cuda-downloads](https://developer.nvidia.com/cuda-downloads)
+2.  Selecciona tu sistema operativo (Windows), arquitectura (x86\_64), versión y el tipo de instalador (`.exe [local]`).
+3.  Descarga y ejecuta el instalador. Se recomienda elegir la instalación **Express (Recomendada)**.
+4.  Una vez finalizado, reinicia tu PC y verifica la instalación de nuevo con `nvcc --version`.
+
+##### **Paso 4: Instalar la versión de PyTorch compatible con tu CUDA**
+1.  Visita la página oficial de PyTorch: [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
+2.  Usa el configurador para seleccionar `Stable`, tu sistema operativo, `Pip`, `Python` y la versión de CUDA que instalaste (ej. CUDA 11.8 o 12.1).
+3.  Copia el comando que te proporciona la página. Por ejemplo, para CUDA 11.8, sería:
+    ```bash
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+    ```
+    *Nota: Si el comando con `pip3` no funciona, prueba con `pip`.*
+
+##### **Paso 5: Verificar que PyTorch detecta tu GPU**
+1.  Abre una terminal de Python ejecutando `python`.
+2.  Ingresa los siguientes comandos:
+    ```python
+    import torch
+    print("CUDA disponible:", torch.cuda.is_available())
+    print("Nombre de la GPU:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "GPU no detectada")
+    ```
+3.  ✅ Si `CUDA disponible` es `True` y ves el nombre de tu GPU, ¡la configuración ha sido un éxito! 🎉
+
+---
+</details>
+
+<br>
+
+Una vez que PyTorch con soporte CUDA esté instalado correctamente, instala el resto de las dependencias del proyecto:
+```bash
+pip install -r requirements_cuda.txt
+```
+
+#### 5. Colocar las imágenes a procesar
+Dirígete a la carpeta `input_images` y coloca allí todas las imágenes microscópicas de estomas que desees analizar.
+
+#### 6. Ejecutar la aplicación
+Con el entorno virtual activado y desde la raíz del proyecto, ejecuta el script principal:
+```bash
+python main.py
+```
+
+#### 7. Revisar los resultados
+Una vez que el script finalice, encontrarás todos los resultados en la carpeta `output`:
+-   Las imágenes originales con las máscaras de segmentación superpuestas.
+-   Un archivo Excel (`.xlsx`) con todos los parámetros morfológicos extraídos para cada estoma detectado en cada imagen.
+
+---
+
+*Nota: Los modelos fueron entrenados en un conjunto de datos de **Arabidopsis thaliana** bajo condiciones particulares de microscopía. No se garantiza un funcionamiento óptimo en imágenes con condiciones significativamente distintas a las del entrenamiento (otras especies, diferente iluminación, magnificación, etc.).*
 
 ## 📄 Licencia
 
 Este proyecto se distribuye bajo la **Licencia MIT**.
 
-Copyright (c) 2025, [Martina Lara Arriagada /Phytolearning Nucleo Milenio en Resilencia Vegetal]
+Copyright (c) 2025, [Martina Lara Arriagada / Phytolearning Nucleo Milenio en Resilencia Vegetal]
